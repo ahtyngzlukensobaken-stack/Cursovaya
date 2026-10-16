@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Учёт выданных и возвращённых товаров</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">УВ</div>
+      <div>
+        <h1>Учёт выданных и возвращённых товаров</h1>
+        <div class="sub">Склад · пункт выдачи · версия 1.0</div>
+      </div>
+    </div>
+    <div class="today">Сегодня: <b id="today-label"></b></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="home" class="active">Главная</button>
+    <button data-tab="items">Товары</button>
+    <button data-tab="recipients">Получатели</button>
+    <button data-tab="issue">Выдача</button>
+    <button data-tab="return">Возврат</button>
+    <button data-tab="journal">Журнал</button>
+    <button data-tab="reports">Отчёты</button>
+    <button data-tab="data">Данные</button>
+  </nav>
+
+  <main>
+    <!-- Главная -->
+    <section id="tab-home" class="tab active">
+      <div class="cards" id="summary"></div>
+      <div class="panel">
+        <h2>Просроченные возвраты</h2>
+        <div id="overdue-list"></div>
+      </div>
+    </section>
+
+    <!-- Товары -->
+    <section id="tab-items" class="tab">
+      <div class="panel">
+        <h2 id="item-form-title">Новый товар</h2>
+        <form id="item-form" class="grid-form" autocomplete="off">
+          <input type="hidden" id="item-id">
+          <label>Артикул<input id="item-code" data-testid="item-code" placeholder="НАПР. ДР-001"></label>
+          <label class="wide">Наименование<input id="item-name" data-testid="item-name" placeholder="Дрель аккумуляторная"></label>
+          <label>Ед. изм.<input id="item-unit" data-testid="item-unit" value="шт."></label>
+          <label>Категория<input id="item-category" data-testid="item-category" placeholder="Инструмент"></label>
+          <label>Количество<input id="item-qty" data-testid="item-qty" type="text" inputmode="numeric" value="1"></label>
+          <div class="actions">
+            <button type="submit" class="primary" data-testid="item-save">Сохранить</button>
+            <button type="button" id="item-cancel" class="ghost">Отмена</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Номенклатура</h2><input id="item-search" class="search" placeholder="Поиск по артикулу или наименованию"></div>
+        <div id="items-table"></div>
+      </div>
+    </section>
+
+    <!-- Получатели -->
+    <section id="tab-recipients" class="tab">
+      <div class="panel">
+        <h2>Новый получатель</h2>
+        <form id="rec-form" class="grid-form" autocomplete="off">
+          <label class="wide">ФИО<input id="rec-name" data-testid="rec-name" placeholder="Иванов Иван Иванович"></label>
+          <label>Подразделение<input id="rec-dept" data-testid="rec-dept" placeholder="Цех № 1"></label>
+          <label>Телефон<input id="rec-phone" data-testid="rec-phone" placeholder="+7 700 000 00 00"></label>
+          <div class="actions"><button type="submit" class="primary" data-testid="rec-save">Добавить</button></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Список получателей</h2>
+        <div id="recipients-table"></div>
+      </div>
+    </section>
+
+    <!-- Выдача -->
+    <section id="tab-issue" class="tab">
+      <div class="panel">
+        <h2>Оформление выдачи</h2>
+        <form id="issue-form" class="grid-form" autocomplete="off">
+          <label class="wide">Товар<select id="issue-item" data-testid="issue-item"></select></label>
+          <label class="wide">Получатель<select id="issue-rec" data-testid="issue-rec"></select></label>
+          <label>Количество<input id="issue-qty" data-testid="issue-qty" inputmode="numeric" value="1"></label>
+          <label>Дата выдачи<input id="issue-date" data-testid="issue-date" type="date"></label>
+          <label>Вернуть до<input id="issue-due" data-testid="issue-due" type="date"></label>
+          <label class="wide">Примечание<input id="issue-note" data-testid="issue-note"></label>
+          <div class="hint wide" id="issue-hint"></div>
+          <div class="actions"><button type="submit" class="primary" data-testid="issue-save">Выдать</button></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Возврат -->
+    <section id="tab-return" class="tab">
+      <div class="panel">
+        <h2>Оформление возврата</h2>
+        <form id="return-form" class="grid-form" autocomplete="off">
+          <label class="full">Документ выдачи (не возвращено полностью)<select id="return-issue" data-testid="return-issue"></select></label>
+          <label>Количество<input id="return-qty" data-testid="return-qty" inputmode="numeric" value="1"></label>
+          <label>Дата возврата<input id="return-date" data-testid="return-date" type="date"></label>
+          <label>Состояние<select id="return-cond" data-testid="return-cond">
+            <option value="good">Исправен — на склад</option>
+            <option value="damaged">Повреждён — списать</option>
+          </select></label>
+          <label class="wide">Примечание<input id="return-note" data-testid="return-note"></label>
+          <div class="hint wide" id="return-hint"></div>
+          <div class="actions"><button type="submit" class="primary" data-testid="return-save">Принять возврат</button></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Журнал -->
+    <section id="tab-journal" class="tab">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Журнал выдачи и возврата</h2>
+          <div class="filters">
+            <input id="journal-search" class="search" placeholder="Поиск: № документа, товар, получатель" data-testid="journal-search">
+            <select id="journal-status" data-testid="journal-status">
+              <option value="all">Все</option>
+              <option value="open">Выдан</option>
+              <option value="partial">Частично возвращён</option>
+              <option value="closed">Возвращён</option>
+              <option value="overdue">Просрочен</option>
+            </select>
+            <button id="journal-csv" class="ghost">CSV</button>
+          </div>
+        </div>
+        <div id="journal-table"></div>
+      </div>
+    </section>
+
+    <!-- Отчёты -->
+    <section id="tab-reports" class="tab">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Оборотная ведомость</h2>
+          <div class="filters">
+            <label class="inline">с <input type="date" id="rep-from" data-testid="rep-from"></label>
+            <label class="inline">по <input type="date" id="rep-to" data-testid="rep-to"></label>
+            <button id="rep-build" class="primary" data-testid="rep-build">Сформировать</button>
+            <button id="rep-csv" class="ghost">CSV</button>
+          </div>
+        </div>
+        <div id="report-table"></div>
+      </div>
+      <div class="panel">
+        <h2>Задолженность получателей</h2>
+        <div id="debts-table"></div>
+      </div>
+    </section>
+
+    <!-- Данные -->
+    <section id="tab-data" class="tab">
+      <div class="panel">
+        <h2>Резервное копирование</h2>
+        <p>Данные хранятся в браузере на этом компьютере. Регулярно сохраняйте резервную копию в файл.</p>
+        <div class="actions left">
+          <button id="backup-save" class="primary">Сохранить копию (JSON)</button>
+          <label class="file-btn ghost">Восстановить из файла<input type="file" id="backup-load" accept=".json,application/json"></label>
+          <button id="demo-load" class="ghost" data-testid="demo-load">Загрузить демонстрационные данные</button>
+          <button id="data-clear" class="danger">Очистить все данные</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/validation.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "uchet-vydachi",
+  "version": "1.0.0",
+  "description": "Учёт выданных и возвращённых товаров — курсовой проект (разработка и тестирование)",
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js tests/integration/*.test.js tests/load/*.test.js",
+    "test:e2e": "node --test tests/e2e/ui.test.js",
+    "test:all": "node --test tests/unit/*.test.js tests/integration/*.test.js tests/load/*.test.js tests/e2e/ui.test.js",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=js/validation.js --test-coverage-include=js/inventory.js --test-coverage-include=js/storage.js tests/unit/*.test.js tests/integration/*.test.js tests/load/*.test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  },
+  "license": "MIT"
+}

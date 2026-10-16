@@ -1,0 +1,94 @@
+TAP version 13
+# PERF report5000x50000 5042.4 ms
+# Subtest: ТС-И11: импорт файла, где выдача ссылается на несуществующий товар, отклоняется
+not ok 1 - ТС-И11: импорт файла, где выдача ссылается на несуществующий товар, отклоняется
+  ---
+  duration_ms: 2.862868
+  type: 'test'
+  location: 'tests/integration/integrity.test.js:18:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (tests/integration/integrity.test.js:21:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: ТС-И12: импорт файла с неверным счётчиком документов отклоняется (защита от повторных номеров)
+not ok 2 - ТС-И12: импорт файла с неверным счётчиком документов отклоняется (защита от повторных номеров)
+  ---
+  duration_ms: 0.606431
+  type: 'test'
+  location: 'tests/integration/integrity.test.js:24:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (tests/integration/integrity.test.js:27:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: ТС-И13: импорт файла с нарушенным балансом остатков отклоняется
+not ok 3 - ТС-И13: импорт файла с нарушенным балансом остатков отклоняется
+  ---
+  duration_ms: 0.521842
+  type: 'test'
+  location: 'tests/integration/integrity.test.js:30:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (tests/integration/integrity.test.js:33:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: ТС-Н03: оборотная ведомость по 5000 товарам и 50000 выдачам — не более 2 с
+not ok 4 - ТС-Н03: оборотная ведомость по 5000 товарам и 50000 выдачам — не более 2 с
+  ---
+  duration_ms: 5646.830215
+  type: 'test'
+  location: 'tests/integration/integrity.test.js:36:1'
+  failureType: 'testCodeFailure'
+  error: 'ведомость формировалась 5042 мс'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (tests/integration/integrity.test.js:49:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5796.368606
