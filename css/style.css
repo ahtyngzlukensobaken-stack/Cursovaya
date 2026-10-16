@@ -99,8 +99,64 @@ tr.overdue td { background: #fff4f4; }
 .toast.show { opacity: 1; transform: none; }
 .toast.ok { background: var(--ok); }
 .toast.error { background: var(--bad); }
-@media (max-width: 800px) {
-  .grid-form, .cards { grid-template-columns: 1fr 1fr; }
+.grid-form label { min-width: 0; }
+.grid-form input, .grid-form select { width: 100%; min-width: 0; }
+
+/* ---------- Планшеты ---------- */
+@media (max-width: 900px) {
+  main { padding: 16px; }
+  .grid-form { grid-template-columns: 1fr 1fr; }
   .grid-form .wide { grid-column: 1 / -1; }
-  .search { min-width: 0; width: 100%; }
+  .cards { grid-template-columns: 1fr 1fr; }
+  .search { min-width: 0; flex: 1 1 220px; }
+}
+
+/* ---------- Телефоны ---------- */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .topbar { padding: 10px 16px; gap: 10px; }
+  .topbar h1 { font-size: 15px; line-height: 1.25; }
+  .sub { display: none; }
+  .logo { width: 34px; height: 34px; font-size: 13px; flex: none; }
+  .today { font-size: 12px; text-align: right; white-space: nowrap; }
+  .tabs {
+    position: sticky; top: 0; z-index: 10; padding: 0 8px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { padding: 12px 12px; }
+  main { padding: 12px 12px 90px; }
+  .panel { padding: 14px 14px; border-radius: 10px; }
+  .panel-head { flex-direction: column; align-items: stretch; }
+  .panel-head > .search { flex: none; width: 100%; }
+  .filters { width: 100%; }
+  .filters .search, .filters select { flex: 1 1 100%; }
+  .filters label.inline { flex: 1 1 45%; }
+  .filters label.inline input { flex: 1; min-width: 0; }
+  .filters button { flex: 1 1 auto; }
+  .grid-form { grid-template-columns: 1fr; gap: 10px; }
+  .grid-form .wide, .grid-form .full { grid-column: auto; }
+  input, select { font-size: 16px; padding: 10px; } /* без автоувеличения на iPhone */
+  .actions { flex-direction: column-reverse; }
+  .actions button, .actions .file-btn { width: 100%; padding: 12px; text-align: center; }
+  .card { padding: 12px; }
+  .card .v { font-size: 22px; }
+
+  /* Таблицы превращаются в карточки */
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { display: none; }
+  tr { border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; margin-bottom: 10px; background: #fff; }
+  tr.overdue { border-color: #f0b4b4; background: #fff4f4; }
+  tr.overdue td { background: transparent; }
+  td {
+    display: flex; justify-content: space-between; gap: 12px; padding: 6px 0;
+    border-bottom: 1px dashed var(--line); text-align: right;
+  }
+  td:last-child { border-bottom: 0; }
+  td::before { content: attr(data-label); color: var(--muted); font-size: 13px; text-align: left; flex: none; max-width: 45%; }
+  td.num, th.num { text-align: right; }
+  td.cell-actions { justify-content: flex-end; gap: 16px; padding-top: 10px; }
+  td.cell-actions::before { content: none; }
+  button.link { padding: 4px 0; }
+  .toast { left: 12px; right: 12px; bottom: 12px; max-width: none; }
 }

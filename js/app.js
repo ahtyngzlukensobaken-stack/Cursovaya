@@ -67,7 +67,9 @@
     }).join('') + '</tr></thead><tbody>';
     rows.forEach(function (r, idx) {
       h += '<tr' + (rowClass ? ' class="' + rowClass(idx) + '"' : '') + '>' + r.map(function (c, i) {
-        return '<td' + (headers[i].num ? ' class="num"' : '') + '>' + c + '</td>';
+        var label = headers[i].t || headers[i];
+        var cls = (headers[i].num ? 'num' : '') + (label ? '' : ' cell-actions');
+        return '<td data-label="' + esc(label) + '"' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + '>' + c + '</td>';
       }).join('') + '</tr>';
     });
     return h + '</tbody></table>';
