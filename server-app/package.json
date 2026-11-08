@@ -1,0 +1,1 @@
+{"name":"uchet-vydachi","private":true,"type":"module","scripts":{"db:generate":"drizzle-kit generate","build":"node scripts/build.mjs","test":"node --test --test-isolation=none tests/inventory.test.mjs"},"devDependencies":{"drizzle-kit":"^0.31.0","drizzle-orm":"^0.44.0"}}

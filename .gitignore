@@ -1,1 +1,7 @@
 node_modules/
+server-app/node_modules/
+server-app/dist/
+server-app/outputs/
+server-app/.wrangler/
+server-app/*.sqlite*
+server-app/mobile.png

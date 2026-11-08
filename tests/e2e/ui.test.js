@@ -1,6 +1,6 @@
 /**
  * Системные (сквозные) тесты пользовательского интерфейса.
- * Браузер Chromium управляется библиотекой Playwright; страница открывается из файла index.html.
+ * Браузер Chromium управляется библиотекой Playwright; страница открывается из файла legacy/index.html.
  * Запуск: node --test tests/e2e/ui.test.js
  */
 const test = require('node:test');
@@ -9,7 +9,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { chromium } = require('playwright');
 
-const URL = 'file://' + path.resolve(__dirname, '../../index.html') + '?today=2026-10-16';
+const URL = 'file://' + path.resolve(__dirname, '../../legacy/index.html') + '?today=2026-10-16';
 const SHOTS = process.env.SHOTS_DIR || '';
 let browser, page;
 
@@ -189,3 +189,4 @@ test('ТС-С13: снимки экранов остальных разделов
   await tab('data'); await shot('data');
   assert.ok(true);
 });
+

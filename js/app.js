@@ -28,8 +28,10 @@
   var params = new URLSearchParams(location.search);
   var TODAY = params.get('today') || localDate();
 
-  var store = new Store(window.localStorage);
-  var inv = store.openInventory();
+  var inv = new Inventory(window.__initialInventory.state);
+  var revision = window.__initialInventory.revision;
+  var account = window.__initialInventory.user;
+  var pending = false;
 
   // ---------------------------------------------------------------- Сообщения
   var toastTimer = null;
@@ -199,75 +201,29 @@
     renderReturnForm(); renderJournal(); renderReports();
   }
 
-  // ---------------------------------------------------------------- Товары
-  function resetItemForm() {
-    $('item-form').reset();
-    $('item-id').value = '';
-    $('item-code').disabled = false;
-    $('item-form-title').textContent = 'Новый товар';
+  async function mutate(action, data) {
+    if(pending)return false;
+    pending=true;document.querySelector('main').inert=true;
+    $('save-status').textContent='Сохраняем…';
+    try {
+      var r=await window.warehouseAPI('/api/inventory/actions','POST',{action:action,data:data,revision:revision});
+      inv=new Inventory(r.state);revision=r.revision;render();$('save-status').textContent='Изменения сохранены';return r;
+    } catch(e) {
+      $('save-status').textContent='Операция не сохранена';
+      if(e.code==='CONFLICT') { try {var fresh=await window.warehouseAPI('/api/inventory');inv=new Inventory(fresh.state);revision=fresh.revision;render();}catch(ignore){} }
+      toast(e.message,'error');return false;
+    } finally {pending=false;document.querySelector('main').inert=false;}
   }
-  $('item-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var id = $('item-id').value;
-    var data = { code: $('item-code').value, name: $('item-name').value, unit: $('item-unit').value,
-      category: $('item-category').value, quantity: $('item-qty').value };
-    if (guard(function () { if (id) inv.updateItem(Number(id), data); else inv.addItem(data); })) {
-      toast(id ? 'Товар изменён' : 'Товар добавлен', 'ok');
-      resetItemForm(); render();
-    }
-  });
-  $('item-cancel').addEventListener('click', resetItemForm);
-  $('item-search').addEventListener('input', renderItems);
-  $('items-table').addEventListener('click', function (e) {
-    var ed = e.target.getAttribute('data-edit-item'), del = e.target.getAttribute('data-del-item');
-    if (ed) {
-      var it = inv.findItem(Number(ed));
-      $('item-id').value = it.id; $('item-code').value = it.code; $('item-code').disabled = true;
-      $('item-name').value = it.name; $('item-unit').value = it.unit; $('item-category').value = it.category;
-      $('item-qty').value = it.total; $('item-form-title').textContent = 'Изменение товара ' + it.code;
-      window.scrollTo(0, 0);
-    }
-    if (del && guard(function () { inv.deleteItem(Number(del)); })) { toast('Товар удалён', 'ok'); render(); }
-  });
-
-  // ---------------------------------------------------------------- Получатели
-  $('rec-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (guard(function () {
-      inv.addRecipient({ fullName: $('rec-name').value, department: $('rec-dept').value, phone: $('rec-phone').value });
-    })) { toast('Получатель добавлен', 'ok'); $('rec-form').reset(); render(); }
-  });
-  $('recipients-table').addEventListener('click', function (e) {
-    var del = e.target.getAttribute('data-del-rec');
-    if (del && guard(function () { inv.deleteRecipient(Number(del)); })) { toast('Получатель удалён', 'ok'); render(); }
-  });
-
-  // ---------------------------------------------------------------- Выдача / возврат
-  $('issue-item').addEventListener('change', renderIssueForm);
-  $('issue-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var issue;
-    if (guard(function () {
-      issue = inv.issueItem({ itemId: $('issue-item').value, recipientId: $('issue-rec').value, quantity: $('issue-qty').value,
-        issueDate: $('issue-date').value, dueDate: $('issue-due').value, note: $('issue-note').value });
-    })) {
-      toast('Оформлена выдача ' + issue.number, 'ok');
-      $('issue-qty').value = '1'; $('issue-note').value = '';
-      render();
-    }
-  });
-  $('return-issue').addEventListener('change', renderReturnForm);
-  $('return-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (guard(function () {
-      inv.returnItem({ issueId: $('return-issue').value, quantity: $('return-qty').value, returnDate: $('return-date').value,
-        condition: $('return-cond').value, note: $('return-note').value });
-    })) {
-      toast('Возврат принят', 'ok');
-      $('return-qty').value = '1'; $('return-note').value = '';
-      render();
-    }
-  });
+  function resetItemForm(){ $('item-form').reset();$('item-id').value='';$('item-code').disabled=false;$('item-form-title').textContent='Новый товар'; }
+  $('item-form').addEventListener('submit',async function(e){e.preventDefault();var id=$('item-id').value;var data={code:$('item-code').value,name:$('item-name').value,unit:$('item-unit').value,category:$('item-category').value,quantity:$('item-qty').value};if(id)data.id=Number(id);if(await mutate(id?'updateItem':'addItem',data)){toast(id?'Товар изменён':'Товар добавлен','ok');resetItemForm();}});
+  $('item-cancel').addEventListener('click',resetItemForm);$('item-search').addEventListener('input',renderItems);
+  $('items-table').addEventListener('click',async function(e){var ed=e.target.getAttribute('data-edit-item'),del=e.target.getAttribute('data-del-item');if(ed){var it=inv.findItem(Number(ed));$('item-id').value=it.id;$('item-code').value=it.code;$('item-code').disabled=true;$('item-name').value=it.name;$('item-unit').value=it.unit;$('item-category').value=it.category;$('item-qty').value=it.total;$('item-form-title').textContent='Изменение товара '+it.code;window.scrollTo(0,0);}if(del&&await mutate('deleteItem',{id:Number(del)}))toast('Товар удалён','ok');});
+  $('rec-form').addEventListener('submit',async function(e){e.preventDefault();if(await mutate('addRecipient',{fullName:$('rec-name').value,department:$('rec-dept').value,phone:$('rec-phone').value})){toast('Получатель добавлен','ok');$('rec-form').reset();}});
+  $('recipients-table').addEventListener('click',async function(e){var id=e.target.getAttribute('data-del-rec');if(id&&await mutate('deleteRecipient',{id:Number(id)}))toast('Получатель удалён','ok');});
+  $('issue-item').addEventListener('change',renderIssueForm);
+  $('issue-form').addEventListener('submit',async function(e){e.preventDefault();var r=await mutate('issueItem',{itemId:$('issue-item').value,recipientId:$('issue-rec').value,quantity:$('issue-qty').value,issueDate:$('issue-date').value,dueDate:$('issue-due').value,note:$('issue-note').value});if(r){toast('Оформлена выдача '+r.result.number,'ok');$('issue-qty').value='1';$('issue-note').value='';}});
+  $('return-issue').addEventListener('change',renderReturnForm);
+  $('return-form').addEventListener('submit',async function(e){e.preventDefault();if(await mutate('returnItem',{issueId:$('return-issue').value,quantity:$('return-qty').value,returnDate:$('return-date').value,condition:$('return-cond').value,note:$('return-note').value})){toast('Возврат принят','ok');$('return-qty').value='1';$('return-note').value='';}});
 
   // ---------------------------------------------------------------- Журнал, отчёты, CSV
   $('journal-search').addEventListener('input', renderJournal);
@@ -297,32 +253,10 @@
     'text/csv;charset=utf-8');
   });
 
-  // ---------------------------------------------------------------- Данные
-  function replaceInventory(newInv) {
-    inv = new Inventory(newInv.toJSON(), function (s) { store.save(s); });
-    store.save(inv.state);
-    render();
-  }
-  $('backup-save').addEventListener('click', function () {
-    download('backup_' + TODAY + '.json', Store.exportJSON(inv), 'application/json');
-  });
-  $('backup-load').addEventListener('change', function (e) {
-    var f = e.target.files[0];
-    if (!f) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      if (guard(function () { replaceInventory(Store.importJSON(reader.result)); })) toast('Данные восстановлены', 'ok');
-      e.target.value = '';
-    };
-    reader.readAsText(f, 'utf-8');
-  });
-  $('data-clear').addEventListener('click', function () {
-    if (!window.confirm('Удалить все данные без возможности восстановления?')) return;
-    store.clear();
-    replaceInventory(new Inventory());
-    toast('Данные очищены', 'ok');
-  });
-  $('demo-load').addEventListener('click', function () {
+  $('backup-save').addEventListener('click',function(){download('backup_'+TODAY+'.json',Store.exportJSON(inv),'application/json');});
+  $('backup-load').addEventListener('change',async function(e){var f=e.target.files[0];if(!f)return;if(!confirm('Заменить данные общего склада содержимым резервной копии?')){e.target.value='';return;}try{var text=await f.text();var state=JSON.parse(text);if(await mutate('replaceState',{state:state}))toast('Данные восстановлены','ok');}catch(err){toast('Не удалось прочитать корректный JSON','error');}finally{e.target.value='';}});
+  $('data-clear').addEventListener('click',async function(){if(confirm('Удалить все данные общего склада? Сначала сохраните резервную копию.'))if(await mutate('clear',{}))toast('Данные очищены','ok');});
+  $('demo-load').addEventListener('click',async function(){if(!confirm('Заменить данные общего склада демонстрационными?'))return;
     var d = new Inventory();
     var items = [
       ['ДР-001', 'Дрель аккумуляторная Bosch', 'шт.', 'Электроинструмент', 6],
@@ -350,13 +284,14 @@
     d.returnItem({ issueId: issues[2].id, quantity: 3, returnDate: addDays(TODAY, -2), condition: 'good' });
     d.returnItem({ issueId: issues[4].id, quantity: 6, returnDate: addDays(TODAY, -1), condition: 'good' });
     d.returnItem({ issueId: issues[4].id, quantity: 1, returnDate: addDays(TODAY, -1), condition: 'damaged', note: 'Порыв' });
-    replaceInventory(d);
-    toast('Загружены демонстрационные данные', 'ok');
-  });
 
-  // ---------------------------------------------------------------- Запуск
-  $('today-label').textContent = fmt(TODAY);
-  if (store.lastError) toast(store.lastError, 'error');
-  render();
-  window.__app = { get inventory() { return inv; }, today: TODAY };
+    if(await mutate('replaceState',{state:d.toJSON()}))toast('Загружены демонстрационные данные','ok');
+  });
+  var legacyRaw=null;try{legacyRaw=localStorage.getItem('uchet-vydachi-v1');}catch(ignore){}
+  function hasLegacy(){if(!legacyRaw)return false;try{var s=JSON.parse(legacyRaw);return ['items','recipients','issues','returns'].some(function(k){return Array.isArray(s[k])&&s[k].length;});}catch(ignore){return true;}}
+  $('legacy-save').addEventListener('click',function(){if(legacyRaw)download('warehouse-local-backup.json',legacyRaw,'application/json');});
+  $('legacy-import').addEventListener('click',async function(){if(!legacyRaw||!confirm('Заменить общий склад данными с этого устройства? Сначала сохраните копию текущего склада.'))return;try{var old=JSON.parse(legacyRaw);if(await mutate('replaceState',{state:old})){toast('Данные перенесены','ok');$('legacy-note').hidden=true;}}catch(e){toast('Не удалось прочитать старую копию','error');}});
+  function applyRole(){var admin=account.role==='admin';$('backup-load').closest('label').hidden=!admin;$('demo-load').hidden=!admin;$('data-clear').hidden=!admin;$('legacy-note').hidden=!admin||!hasLegacy();}
+  $('today-label').textContent=fmt(TODAY);render();applyRole();
+  window.WarehouseApp={get busy(){return pending;},load:function(snapshot,user){inv=new Inventory(snapshot.state);revision=snapshot.revision;account=user;resetItemForm();$('rec-form').reset();$('issue-form').reset();$('return-form').reset();$('item-search').value='';$('journal-search').value='';$('journal-status').value='all';render();applyRole();showTab('home');},get inventory(){return inv;}};
 })();
