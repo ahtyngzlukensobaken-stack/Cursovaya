@@ -14,7 +14,7 @@
  }
  function showLogin(){keepToken(null);user=null;$('warehouse-main').hidden=true;$('tabs').hidden=true;$('session-bar').hidden=true;$('auth-screen').hidden=false;if(window.WarehouseApp)window.WarehouseApp.load({state:new Inventory().toJSON(),revision:0},{role:'user'});document.querySelectorAll('dialog[open]').forEach(d=>d.close());form();}
  async function enter(account){const snapshot=await request('/api/inventory');user=account;
-  if(!window.WarehouseApp){window.__initialInventory={...snapshot,user};if(!loadingScript)loadingScript=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='js/app.js';script.onload=resolve;script.onerror=()=>reject(new Error('Не удалось загрузить интерфейс'));document.body.appendChild(script);});await loadingScript;window.__initialInventory=null;}
+  if(!window.WarehouseApp){window.__initialInventory={...snapshot,user};if(!loadingScript)loadingScript=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='js/app.js?v=accounts-20261108';script.onload=resolve;script.onerror=()=>reject(new Error('Не удалось загрузить интерфейс'));document.body.appendChild(script);});await loadingScript;window.__initialInventory=null;}
   else window.WarehouseApp.load(snapshot,user);
   $('session-name').textContent=user.name+(user.role==='admin'?' · Администратор':'');$('users-open').hidden=user.role!=='admin';$('save-status').textContent='Общий склад';$('auth-screen').hidden=true;$('warehouse-main').hidden=false;$('tabs').hidden=false;$('session-bar').hidden=false;
  }
